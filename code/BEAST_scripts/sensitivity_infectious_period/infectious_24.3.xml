@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core
+:beast.evolution.alignment
+:beast.evolution.tree.coalescent
+:beast.core.util
+:beast.evolution.nuc
+:beast.evolution.operators
+:beast.evolution.sitemodel
+:beast.evolution.substitutionmodel
+:beast.base.evolution.alignment
+:beast.pkgmgmt
+:beast.base.core
+:beast.base.inference
+:beast.base.evolution.tree.coalescent
+:beast.pkgmgmt
+:beast.base.core
+:beast.base.inference.util
+:beast.evolution.nuc
+:beast.base.evolution.operator
+:beast.base.inference.operator
+:beast.base.evolution.sitemodel
+:beast.base.evolution.substitutionmodel
+:beast.base.evolution.likelihood
+:bdmmprime.util.operators
+:bdmmprime.util.priors
+:feast.fileio
+:feast.parameter
+:feast.function
+:feast.expressions" required="BEAST.base v2.7.7:BDMM-Prime v2.2.2:SA v2.1.1" version="2.7">
+
+
+<data
+id="D68_B"
+spec="feast.fileio.AlignmentFromFasta"
+fileName="/Users/dnj13/Documents/D68_bdmmprime_neweurope/model_run/samples_2.7.7/samp_3mo_re1/B_sub_3mo_1.fasta"
+name="alignment"/>
+<!-- Wont work without complete path ???? -->
+
+<data
+id="D68_A"
+spec="feast.fileio.AlignmentFromFasta"
+fileName="/Users/dnj13/Documents/D68_bdmmprime_neweurope/model_run/samples_2.7.7/samp_3mo_re1/A_sub_3mo_1.fasta"
+name="alignment"/>
+
+<!-- Map elements     -->
+    <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
+    <map name="Exponential" >beast.base.inference.distribution.Exponential</map>
+    <map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
+    <map name="Normal" >beast.base.inference.distribution.Normal</map>
+    <map name="Beta" >beast.base.inference.distribution.Beta</map>
+    <map name="Gamma" >beast.base.inference.distribution.Gamma</map>
+    <map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
+    <map name="prior" >beast.base.inference.distribution.Prior</map>
+    <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
+    <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
+
+<!--Make sampling rates relative to A US-->
+<relsamp_A id="relsamp_A" spec="feast.function.Concatenate">
+    <arg spec='feast.expressions.ExpCalculator' value= "base*rel_loc*rel_2014">
+        <arg idref="base"/>
+        <arg idref="rel_loc"/>
+        <arg id="rel_2014" spec='parameter.RealParameter' value="1" />
+    </arg>
+    <arg spec='feast.expressions.ExpCalculator' value="base*rel_2014">
+                <arg idref="base"/>
+                <arg idref="rel_2014"/>
+    </arg>
+    <arg spec='feast.expressions.ExpCalculator' value= "base*rel_loc">
+        <arg idref="base"/>
+        <arg id="rel_loc" spec='parameter.RealParameter' value="1" />
+    </arg>
+    <arg id="base" spec='parameter.RealParameter' value="0.01"/>
+    <arg spec='parameter.RealParameter' value="0.0 0.0"/> <!--0 before first sample-->
+</relsamp_A>
+
+
+<relsamp_B id="relsamp_B" spec="feast.function.Concatenate">
+    <arg spec='feast.expressions.ExpCalculator' value="base*rel_clade*rel_loc*rel_2014">
+        <arg idref="base"/>
+        <arg idref="rel_clade"/>
+        <arg idref="rel_loc"/>
+        <arg idref="rel_2014"/>
+    </arg>
+    <arg spec='feast.expressions.ExpCalculator' value= "base*rel_clade*rel_2014">
+        <arg idref="rel_clade"/>
+        <arg idref="base"/>
+        <arg idref="rel_2014"/>
+    </arg>
+    <arg spec='feast.expressions.ExpCalculator' value="base*rel_clade*rel_loc">
+        <arg idref="base"/>
+        <arg idref="rel_clade"/>
+        <arg idref="rel_loc"/>
+    </arg>
+    <arg spec='feast.expressions.ExpCalculator' value= "base*rel_clade">
+        <arg id="rel_clade" spec='parameter.RealParameter' value="1"/>
+        <arg idref="base"/>
+    </arg>
+    <arg spec='parameter.RealParameter' value="0.0 0.0"/>
+</relsamp_B>
+
+   
+<!-- MCMC -->
+    <run id="mcmc" spec="MCMC" chainLength="100000000" numInitializationAttempts="100">
+
+    <state id="state" spec="State" storeEvery="5000">
+        <tree id="Tree.t:D68_B" spec="beast.base.evolution.tree.Tree" name="stateNode">
+            <trait id="dateTrait.t:D68_B" spec="feast.fileio.TraitSetFromTaxonSet" 
+                	dateFormat="Y" 
+                	traitname="date" 
+                	delimiter= "_"
+                    everythingAfterLast="true">
+                    <taxa id="TaxonSet.D68_B" spec="TaxonSet">                                          
+                        <alignment idref="D68_B"/>                                       
+                    </taxa>                               
+            </trait>                         
+        <taxonset idref="TaxonSet.D68_B"/>                     
+        </tree>    
+        <tree id="Tree.t:D68_A" spec="beast.base.evolution.tree.Tree" name="stateNode">
+            <trait id="dateTrait.t:D68_A" spec="feast.fileio.TraitSetFromTaxonSet" 
+                	dateFormat="Y" 
+                	traitname="date" 
+                	delimiter= "_"
+                	everythingAfterLast="true">     
+                    <taxa id="TaxonSet.D68_A" spec="TaxonSet">                                          
+                        <alignment idref="D68_A"/>                                       
+                    </taxa>                               
+            </trait>                         
+        <taxonset idref="TaxonSet.D68_A"/>                     
+        </tree>
+        <!-- clock params -->
+        <parameter id="kappa.s:D68_A" spec="parameter.RealParameter" lower="0.0" name="stateNode">2.0</parameter>
+        <parameter id="ucldMean.c:D68_A" spec="parameter.RealParameter" name="stateNode">0.005</parameter>
+        <parameter id="ucldStdev.c:D68_A" spec="parameter.RealParameter" lower="0.0" name="stateNode">0.1</parameter>
+        <stateNode id="rateCategories.c:D68_A" spec="parameter.IntegerParameter" dimension="884">1</stateNode>
+        <parameter id="freqParameter.s:D68_A" spec="parameter.RealParameter" dimension="4" lower="0.0" name="stateNode" upper="1.0">0.25</parameter>
+        
+        <parameter id="ucldMean.c:D68_B" spec="parameter.RealParameter" name="stateNode">0.005</parameter>
+        <parameter id="ucldStdev.c:D68_B" spec="parameter.RealParameter" lower="0.0" name="stateNode">0.1</parameter>
+        <stateNode id="rateCategories.c:D68_B" spec="parameter.IntegerParameter" dimension="2144">1</stateNode>
+
+        <!-- A clade -->
+        <parameter id="originBDMMPrime.t:D68_A" spec="parameter.RealParameter" name="stateNode">35.0</parameter>
+
+        <parameter id="ReEpi.t:D68_A" spec="parameter.RealParameter" dimension="104" name="stateNode">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</parameter> 
+        <!--Relative sampling prop params-->
+        <stateNode idref="base"/>
+        <stateNode idref="rel_loc"/>
+        <stateNode idref="rel_clade"/>
+        <stateNode idref="rel_2014"/>
+
+        <parameter id="migrationRateEpi.t:D68" spec="parameter.RealParameter" dimension="2" lower="0.0" name="stateNode">0.05 0.05</parameter>
+        <!-- B clade -->
+
+
+            <parameter id="originBDMMPrime.t:D68_B" spec="parameter.RealParameter" name="stateNode">35.0</parameter>
+            <parameter id="ReEpi.t:D68_B" spec="parameter.RealParameter" dimension="114" name="stateNode">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</parameter> 
+        </state>
+       
+        <!-- Starting trees -->
+        <init id="RandomTree.t:D68_A" spec="RandomTree" estimate="false" initial="@Tree.t:D68_A" taxa="@D68_A">
+            <populationModel id="ConstantPopulation0.t:D68_A" spec="ConstantPopulation">
+                <parameter id="randomPopSize.t:D68_A" spec="parameter.RealParameter" name="popSize">1.0</parameter>
+            </populationModel>
+        </init>
+        <init id="RandomTree.t:D68_B" spec="RandomTree" estimate="false" initial="@Tree.t:D68_B" taxa="@D68_B">
+            <populationModel id="ConstantPopulation0.t:D68_B" spec="ConstantPopulation">
+                <parameter id="randomPopSize.t:D68_B" spec="parameter.RealParameter" name="popSize">1.0</parameter>
+            </populationModel>
+        </init>
+        <!-- Posterior distribution -->
+        <distribution id="posterior" spec="CompoundDistribution">
+        <!-- Prior distribution -->
+            <distribution id="prior" spec="CompoundDistribution">
+                <distribution id="BDMMPrime.t:D68_A" spec="bdmmprime.distribution.BirthDeathMigrationDistribution" conditionOnSurvival="false" tree="@Tree.t:D68_A">
+                    <parameterization id="EpiBDMMPrimeParameterization.t:D68_A" spec="bdmmprime.parameterization.EpiParameterization" processLength="@originBDMMPrime.t:D68_A">
+                        <Re id="ReSPEpi.t:D68_A" spec="bdmmprime.parameterization.SkylineVectorParameter" isScalar="false" processLength="@originBDMMPrime.t:D68_A" skylineValues="@ReEpi.t:D68_A" timesAreAges="true">
+                            <typeSet id="typeSetBDMMPrime.t:D68_A" spec="bdmmprime.parameterization.TypeSet">
+                                <typeTraitSet id="typeTraitSet.t:D68_A" spec="feast.fileio.TraitSetFromTaxonSet" traitname="type" delimiter="_" takeGroup="1">
+                                    <taxa id="TaxonSet.2" spec="TaxonSet" alignment="@D68_A"/>
+                                </typeTraitSet>
+                            </typeSet>
+                            <parameter id="ReChangeTimesEpi.t:D68_A" spec="TimeParameter" dimension="51" estimate="false" name="changeTimes" time="2023-09-15 2023-03-15 2022-09-15 2022-03-15 2021-09-15 2021-03-15 2020-09-15 2020-03-15 2019-09-15 2019-03-15 2018-09-15 2018-03-15 2017-09-15 2017-03-15 2016-09-15 2016-03-15 2015-09-15 2015-03-15 2014-09-15 2014-03-15 2013-09-15 2013-03-15 2012-09-15 2012-03-15 2011-09-15 2011-03-15 2010-09-15 2010-03-15 2009-09-15 2009-03-15 2008-09-15 2008-03-15 2007-09-15 2007-03-15 2006-09-15 2006-03-15 2005-09-15 2005-03-15 2004-09-15 2004-03-15 2003-09-15 2003-03-15 2002-09-15 2002-03-15 2001-09-15 2001-03-15 2000-09-15 2000-03-15 1999-09-15 1999-03-15 1998-09-15" mostRecentSampleTime="2021-12-24" timeFormat="yyyy-M-dd"/>
+
+                        </Re>
+                        <becomeUninfectiousRate id="becomeUninfectiousRateSPEpi.t:D68_A" spec="bdmmprime.parameterization.SkylineVectorParameter" processLength="@originBDMMPrime.t:D68_A" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_A">
+                            <parameter id="becomeUninfectiousRateEpi.t:D68_A" spec="parameter.RealParameter" estimate="false" name="skylineValues">24.3</parameter>
+                        </becomeUninfectiousRate>
+
+
+                        <samplingProportion id="samplingProportionSPEpi.t:D68_A" spec="bdmmprime.parameterization.SkylineVectorParameter" isScalar="false" processLength="@originBDMMPrime.t:D68_A" skylineValues="@relsamp_A" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_A">
+                                            <parameter id="samplingProportionChangeTimesEpi.t:D68_A" spec="TimeParameter" dimension="2" estimate="false" name="changeTimes" time="2014-03-15 1998-02-01" mostRecentSampleTime="2021-12-24" timeFormat="yyyy-M-dd"/>
+                        </samplingProportion>
+
+
+                        <rhoSampling id="rhoSamplingProbSPEpi.t:D68_A" spec="bdmmprime.parameterization.TimedParameter" processLength="@originBDMMPrime.t:D68_A" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_A"/>
+                        <removalProb id="removalProbSPEpi.t:D68_A" spec="bdmmprime.parameterization.SkylineVectorParameter" processLength="@originBDMMPrime.t:D68_A" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_A">
+                            <parameter id="removalProbEpi.t:D68_A" spec="parameter.RealParameter" estimate="false" lower="0.0" name="skylineValues" upper="1.0">1.0</parameter>
+                        </removalProb>
+                        <migrationRate id="migrationRateSPEpi.t:D68_A" spec="bdmmprime.parameterization.SkylineMatrixParameter" isScalar="false" processLength="@originBDMMPrime.t:D68_A" skylineValues="@migrationRateEpi.t:D68" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_A"/>
+                        <ReAmongDemes id="ReAmongDemesSPEpi.t:D68_A" spec="bdmmprime.parameterization.SkylineMatrixParameter" processLength="@originBDMMPrime.t:D68_A" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_A">
+                            <parameter id="ReAmongDemesEpi.t:D68_A" spec="parameter.RealParameter" estimate="false" name="skylineValues">0.0</parameter>
+                        </ReAmongDemes>
+                        <typeSet idref="typeSetBDMMPrime.t:D68_A"/>
+                    </parameterization>
+                    <parameter id="startTypePriorProbs.t:D68_A" spec="parameter.RealParameter" dimension="2" estimate="false" lower="0.0" name="startTypePriorProbs" upper="1.0">0.5 0.5</parameter>
+                    <typeTraitSet idref="typeTraitSet.t:D68_A"/>
+                </distribution>
+                <!-- BDMM-prime distribution B clade -->
+                <distribution id="BDMMPrime.t:D68_B" spec="bdmmprime.distribution.BirthDeathMigrationDistribution" conditionOnSurvival="false" tree="@Tree.t:D68_B">
+                    <parameterization id="EpiBDMMPrimeParameterization.t:D68_B" spec="bdmmprime.parameterization.EpiParameterization" processLength="@originBDMMPrime.t:D68_B">
+                        <Re id="ReSPEpi.t:D68_B" spec="bdmmprime.parameterization.SkylineVectorParameter" isScalar="false" processLength="@originBDMMPrime.t:D68_B" skylineValues="@ReEpi.t:D68_B" timesAreAges="true">
+                            <typeSet id="typeSetBDMMPrime.t:D68_B" spec="bdmmprime.parameterization.TypeSet">
+                                <typeTraitSet id="typeTraitSet.t:D68_B" spec="feast.fileio.TraitSetFromTaxonSet" traitname="type" delimiter="_" takeGroup="1">
+                                    <taxa id="TaxonSet.3" spec="TaxonSet" alignment="@D68_B"/>
+                                </typeTraitSet>
+                            </typeSet>
+                        <parameter id="ReChangeTimesEpi.t:D68_B" spec="TimeParameter" dimension="56" estimate="false" name="changeTimes" time="2023-09-15 2023-03-15 2022-09-15 2022-03-15 2021-09-15 2021-03-15 2020-09-15 2020-03-15 2019-09-15 2019-03-15 2018-09-15 2018-03-15 2017-09-15 2017-03-15 2016-09-15 2016-03-15 2015-09-15 2015-03-15 2014-09-15 2014-03-15 2013-09-15 2013-03-15 2012-09-15 2012-03-15 2011-09-15 2011-03-15 2010-09-15 2010-03-15 2009-09-15 2009-03-15 2008-09-15 2008-03-15 2007-09-15 2007-03-15 2006-09-15 2006-03-15 2005-09-15 2005-03-15 2004-09-15 2004-03-15 2003-09-15 2003-03-15 2002-09-15 2002-03-15 2001-09-15 2001-03-15 2000-09-15 2000-03-15 1999-09-15 1999-03-15 1998-09-15 1998-03-15 1997-09-15 1997-03-15 1996-09-15 1996-03-15" mostRecentSampleTime="2022-12-10" timeFormat="yyyy-M-dd"/>
+                        </Re>
+                        <becomeUninfectiousRate id="becomeUninfectiousRateSPEpi.t:D68_B" spec="bdmmprime.parameterization.SkylineVectorParameter" processLength="@originBDMMPrime.t:D68_B" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_B">
+                            <parameter id="becomeUninfectiousRateEpi.t:D68_B" spec="parameter.RealParameter" estimate="false" name="skylineValues">24.3</parameter>
+                        </becomeUninfectiousRate>
+
+
+                        <samplingProportion id="samplingProportionSPEpi.t:D68_B" spec="bdmmprime.parameterization.SkylineVectorParameter" isScalar="false" processLength="@originBDMMPrime.t:D68_B" skylineValues="@relsamp_B" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_B">
+                                                <parameter id="samplingProportionChangeTimesEpi.t:D68_B" spec="TimeParameter" dimension = "2" estimate="false" name="changeTimes" time="2014-03-15 1995-09-01" mostRecentSampleTime="2022-12-10" timeFormat="yyyy-M-dd"/>
+                        </samplingProportion>
+
+
+                        <rhoSampling id="rhoSamplingProbSPEpi.t:D68_B" spec="bdmmprime.parameterization.TimedParameter" processLength="@originBDMMPrime.t:D68_B" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_B"/>
+                        <removalProb id="removalProbSPEpi.t:D68_B" spec="bdmmprime.parameterization.SkylineVectorParameter" processLength="@originBDMMPrime.t:D68_B" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_B">
+                            <parameter id="removalProbEpi.t:D68_B" spec="parameter.RealParameter" estimate="false" lower="0.0" name="skylineValues" upper="1.0">1.0</parameter>
+                        </removalProb>
+                        <migrationRate id="migrationRateSPEpi.t:D68_B" spec="bdmmprime.parameterization.SkylineMatrixParameter" isScalar="false" processLength="@originBDMMPrime.t:D68_B" skylineValues="@migrationRateEpi.t:D68" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_B"/>
+                        <ReAmongDemes id="ReAmongDemesSPEpi.t:D68_B" spec="bdmmprime.parameterization.SkylineMatrixParameter" processLength="@originBDMMPrime.t:D68_B" timesAreAges="true" typeSet="@typeSetBDMMPrime.t:D68_B">
+                            <parameter id="ReAmongDemesEpi.t:D68_B" spec="parameter.RealParameter" estimate="false" name="skylineValues">0.0</parameter>
+                        </ReAmongDemes>
+                        <typeSet idref="typeSetBDMMPrime.t:D68_B"/>
+                    </parameterization>
+                    <parameter id="startTypePriorProbs.t:D68_B" spec="parameter.RealParameter" dimension="2" estimate="false" lower="0.0" name="startTypePriorProbs" upper="1.0">0.5 0.5</parameter>
+                    <typeTraitSet idref="typeTraitSet.t:D68_B"/>
+                </distribution>
+                <!-- Priors on parameters -->
+                <!-- Re -->
+                <distribution id="ReEpiPrior.t:D68_A" spec="bdmmprime.util.priors.ZeroExcludingPrior" x="@ReEpi.t:D68_A">
+                    <LogNormal id="LogNormalDistributionModel.3" name="distr">
+                        <parameter id="RealParameter.54" spec="parameter.RealParameter" estimate="false" name="M">0.1</parameter>
+                        <parameter id="RealParameter.55" spec="parameter.RealParameter" estimate="false" lower="0.0" name="S" upper="5.0">0.5</parameter>
+                    </LogNormal>
+                </distribution>
+                <distribution id="ReEpiPrior.t:D68_B" spec="bdmmprime.util.priors.ZeroExcludingPrior" x="@ReEpi.t:D68_B">
+                    <LogNormal id="LogNormalDistributionModel.4" name="distr">
+                        <parameter id="RealParameter.56" spec="parameter.RealParameter" estimate="false" name="M">0.1</parameter>
+                        <parameter id="RealParameter.57" spec="parameter.RealParameter" estimate="false" lower="0.0" name="S" upper="5.0">0.5</parameter>
+                    </LogNormal>
+                </distribution>
+            <!-- Clock -->
+                <prior id="MeanRatePrior.c:D68_A" name="distribution" x="@ucldMean.c:D68_A">
+                    <LogNormal id="LogNormalDistributionModel.7" meanInRealSpace="true" name="distr">
+                        <parameter id="RealParameter.66" spec="parameter.RealParameter" estimate="false" name="M">0.005</parameter>
+                        <parameter id="RealParameter.67" spec="parameter.RealParameter" estimate="false" lower="0.0" name="S" upper="5.0">0.2</parameter>
+                    </LogNormal>
+                </prior>               
+                <prior id="ucldStdevPrior.c:D68_A" name="distribution" x="@ucldStdev.c:D68_A">
+                    <Gamma id="Gamma.18" name="distr">
+                        <parameter id="RealParameter.47" spec="parameter.RealParameter" estimate="false" name="alpha">0.5396</parameter>
+                        <parameter id="RealParameter.48" spec="parameter.RealParameter" estimate="false" name="beta">0.3819</parameter>
+                    </Gamma>
+                </prior>
+                <prior id="MeanRatePrior.c:D68_B" name="distribution" x="@ucldMean.c:D68_B">
+                    <LogNormal id="LogNormalDistributionModel.8" meanInRealSpace="true" name="distr">
+                        <parameter id="RealParameter.68" spec="parameter.RealParameter" estimate="false" name="M">0.005</parameter>
+                        <parameter id="RealParameter.69" spec="parameter.RealParameter" estimate="false" lower="0.0" name="S" upper="5.0">0.2</parameter>
+                    </LogNormal>
+                </prior>
+                <prior id="ucldStdevPrior.c:D68_B" name="distribution" x="@ucldStdev.c:D68_B">
+                    <Gamma id="Gamma.16" name="distr">
+                        <parameter id="RealParameter.42" spec="parameter.RealParameter" estimate="false" name="alpha">0.5396</parameter>
+                        <parameter id="RealParameter.43" spec="parameter.RealParameter" estimate="false" name="beta">0.3819</parameter>
+                    </Gamma>
+                </prior>
+                <prior id="KappaPrior.s:D68_A" name="distribution" x="@kappa.s:D68_A">
+                    <LogNormal id="LogNormalDistributionModel.2" name="distr">
+                        <parameter id="RealParameter.39" spec="parameter.RealParameter" estimate="false" name="M">1.0</parameter>
+                        <parameter id="RealParameter.40" spec="parameter.RealParameter" estimate="false" name="S">1.25</parameter>
+                    </LogNormal>
+                </prior>
+                <prior id="FrequenciesPrior.s:D68_A" name="distribution" x="@freqParameter.s:D68_A">
+                    <Uniform id="Uniform.6" name="distr"/>
+                </prior>
+
+                <!-- Migrations -->
+                <distribution id="migrationRateEpiPrior.t:D68" spec="bdmmprime.util.priors.ZeroExcludingPrior" x="@migrationRateEpi.t:D68">
+                    <Gamma id="Gamma.20" name="distr">
+                        <parameter id="RealParameter.58" spec="parameter.RealParameter" estimate="false" name="alpha">1.0</parameter>
+                        <parameter id="RealParameter.59" spec="parameter.RealParameter" estimate="false" name="beta">1.0</parameter>
+                    </Gamma>
+                </distribution>
+                <!-- Origins -->
+                <prior id="originBDMMPrimePrior.t:D68_A" name="distribution" x="@originBDMMPrime.t:D68_A">
+                    <LogNormal id="LogNormalDistributionModel.5" meanInRealSpace="true" name="distr">
+                        <parameter id="RealParameter.62" spec="parameter.RealParameter" estimate="false" name="M">35.0</parameter>
+                        <parameter id="RealParameter.63" spec="parameter.RealParameter" estimate="false" lower="0.0" name="S" upper="5.0">1.25</parameter>
+                    </LogNormal>
+                </prior>
+                <prior id="originBDMMPrimePrior.t:D68_B" name="distribution" x="@originBDMMPrime.t:D68_B">
+                    <LogNormal id="LogNormalDistributionModel.6" meanInRealSpace="true" name="distr">
+                        <parameter id="RealParameter.64" spec="parameter.RealParameter" estimate="false" name="M">35.0</parameter>
+                        <parameter id="RealParameter.65" spec="parameter.RealParameter" estimate="false" lower="0.0" name="S" upper="5.0">1.25</parameter>
+                    </LogNormal>
+                </prior>
+                <!-- Sampling proportions -->
+            <distribution id="baseprior" spec="bdmmprime.util.priors.ZeroExcludingPrior" x="@base">
+                <Beta id="Beta.0" name="distr">
+                    <parameter id="RealParameter.28" spec="parameter.RealParameter" estimate="false" name="alpha">1.0</parameter>
+                    <parameter id="RealParameter.29" spec="parameter.RealParameter" estimate="false" name="beta">1.0</parameter>
+                </Beta>
+            </distribution>
+            <distribution id="rellocationprior" spec="bdmmprime.util.priors.ZeroExcludingPrior" x="@rel_loc">
+                <LogNormal id="LogNormalDistributionModel.9" name="distr">
+                    <parameter id="RealParameter.32" spec="parameter.RealParameter" estimate="false" name="M">0.0</parameter>
+                    <parameter id="RealParameter.33" spec="parameter.RealParameter" estimate="false" name="S">0.25</parameter>
+                </LogNormal>
+            </distribution>
+            <distribution id="relcladeprior" spec="bdmmprime.util.priors.ZeroExcludingPrior" x="@rel_clade">
+                <LogNormal id="LogNormalDistributionModel.10" name="distr">
+                    <parameter id="RealParameter.34" spec="parameter.RealParameter" estimate="false" name="M">0.0</parameter>
+                    <parameter id="RealParameter.38" spec="parameter.RealParameter" estimate="false" name="S">0.25</parameter>
+                </LogNormal>
+            </distribution>
+            <distribution id="rel2014prior" spec="bdmmprime.util.priors.ZeroExcludingPrior" x="@rel_2014">
+                <LogNormal id="LogNormalDistributionModel.11" name="distr">
+                    <parameter id="RealParameter.45" spec="parameter.RealParameter" estimate="false" name="M">0.0</parameter>
+                    <parameter id="RealParameter.46" spec="parameter.RealParameter" estimate="false" name="S">0.25</parameter>
+                </LogNormal>
+            </distribution>
+        </distribution>
+            <!-- Likelihood -->
+            <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
+                <distribution id="treeLikelihood.D68_A" spec="ThreadedTreeLikelihood" data="@D68_A" tree="@Tree.t:D68_A">
+                    <siteModel id="SiteModel.s:D68_A" spec="SiteModel">
+                        <parameter id="mutationRate.s:D68_A" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
+                        <parameter id="gammaShape.s:D68_A" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
+                        <parameter id="proportionInvariant.s:D68_A" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+                        <substModel id="hky.s:D68_A" spec="HKY" kappa="@kappa.s:D68_A">
+                            <frequencies id="estimatedFreqs.s:D68_A" spec="Frequencies" frequencies="@freqParameter.s:D68_A"/>
+                        </substModel>
+                    </siteModel>
+                    <branchRateModel id="RelaxedClock.c:D68_A" spec="beast.base.evolution.branchratemodel.UCRelaxedClockModel" clock.rate="@ucldMean.c:D68_A" rateCategories="@rateCategories.c:D68_A" tree="@Tree.t:D68_A">
+                        <LogNormal id="LogNormalDistributionModel.c:D68_A" S="@ucldStdev.c:D68_A" meanInRealSpace="true" name="distr">
+                            <parameter id="RealParameter.70" spec="parameter.RealParameter" estimate="false" lower="0.0" name="M" upper="1.0">1.0</parameter>
+                        </LogNormal>
+                    </branchRateModel>
+                </distribution>
+                <distribution id="treeLikelihood.D68_B" spec="ThreadedTreeLikelihood" data="@D68_B" siteModel="@SiteModel.s:D68_A" tree="@Tree.t:D68_B">
+                    <branchRateModel id="RelaxedClock.c:D68_B" spec="beast.base.evolution.branchratemodel.UCRelaxedClockModel" clock.rate="@ucldMean.c:D68_B" rateCategories="@rateCategories.c:D68_B" tree="@Tree.t:D68_B">
+                        <LogNormal id="LogNormalDistributionModel.c:D68_B" S="@ucldStdev.c:D68_B" meanInRealSpace="true" name="distr">
+                            <parameter id="RealParameter.41" spec="parameter.RealParameter" estimate="false" lower="0.0" name="M" upper="1.0">1.0</parameter>
+                        </LogNormal>
+                    </branchRateModel>
+                </distribution>
+            </distribution>
+        </distribution>
+        
+        
+        <!-- Operators -->
+        <operator id="base1EpiScaler.t:D68_A" spec="ScaleOperator" parameter="@base" weight="3.0"/>
+        <operator id="relloc1EpiScaler.t:D68_A" spec="ScaleOperator" parameter="@rel_loc" weight="3.0"/>
+        <operator id="relclade1EpiScaler.t:D68_A" spec="ScaleOperator" parameter="@rel_clade" weight="3.0"/>
+        <operator id="relloc2EpiScaler.t:D68_A" spec="ScaleOperator" parameter="@rel_2014" weight="3.0"/>
+        <operator id="FrequenciesExchanger.s:D68_A" spec="AdaptableOperatorSampler" weight="0.05">
+            <parameter idref="freqParameter.s:D68_A"/>
+            <operator id="AVMNOperator.D68_A" spec="kernel.AdaptableVarianceMultivariateNormalOperator" allowNonsense="true" beta="0.05" burnin="400" initial="800" weight="0.1">
+                <transformations id="AVMNSumTransform.D68_A" spec="operator.kernel.Transform$LogConstrainedSumTransform">
+                    <f idref="freqParameter.s:D68_A"/>
+                </transformations>
+                <transformations id="AVMNLogTransform.D68_A" spec="operator.kernel.Transform$LogTransform">
+                    <f idref="kappa.s:D68_A"/>
+                </transformations>
+                <transformations id="AVMNNoTransform.D68_A" spec="operator.kernel.Transform$NoTransform">
+                    <f idref="Tree.t:D68_A"/>
+                </transformations>
+            </operator>
+            <operator id="FrequenciesExchangerX.s:D68_A" spec="operator.kernel.BactrianDeltaExchangeOperator" delta="0.01" weight="0.1">
+                <parameter idref="freqParameter.s:D68_A"/>
+            </operator>
+        </operator>
+        <operator id="BDMMPrimeLeafToSA.t:D68_A" spec="sa.evolution.operators.LeafToSampledAncestorJump" tree="@Tree.t:D68_A" weight="10.0"/>
+        <operator id="BDMMPrimeSAWilsonBalding.t:D68_A" spec="sa.evolution.operators.SAWilsonBalding" tree="@Tree.t:D68_A" weight="10.0"/>
+        <operator id="BDMMPrimeSAWide.t:D68_A" spec="sa.evolution.operators.SAExchange" isNarrow="false" tree="@Tree.t:D68_A" weight="10.0"/>
+        <operator id="BDMMPrimeSANarrow.t:D68_A" spec="sa.evolution.operators.SAExchange" tree="@Tree.t:D68_A" weight="10.0"/>
+        <operator id="BDMMPrimeSAUniformOperator.t:D68_A" spec="sa.evolution.operators.SAUniform" tree="@Tree.t:D68_A" weight="20.0"/>
+        <operator id="BDMMPrimeSATreeRootScaler.t:D68_A" spec="sa.evolution.operators.SAScaleOperator" rootOnly="true" scaleFactor="0.95" tree="@Tree.t:D68_A" weight="1.0"/>
+        <operator id="BDMMPrimeSATreeScaler.t:D68_A" spec="sa.evolution.operators.SAScaleOperator" scaleFactor="0.95" tree="@Tree.t:D68_A" weight="3.0"/>
+        <operator id="originBDMMPrimeScaler.t:D68_A" spec="ScaleOperator" parameter="@originBDMMPrime.t:D68_A" weight="3.0"/>
+        <operator id="ReEpiScaler.t:D68_A" spec="ScaleOperator" parameter="@ReEpi.t:D68_A" weight="3.0"/>
+        <operator id="KappaScaler.s:D68_A" spec="AdaptableOperatorSampler" weight="0.05">
+            <parameter idref="kappa.s:D68_A"/>
+            <operator idref="AVMNOperator.D68_A"/>
+            <operator id="KappaScalerX.s:D68_A" spec="kernel.BactrianScaleOperator" parameter="@kappa.s:D68_A" scaleFactor="0.1" upper="10.0" weight="0.1"/>
+        </operator>
+        <operator id="ucldMeanScaler.c:D68_B" spec="ScaleOperator" parameter="@ucldMean.c:D68_B" scaleFactor="0.5" weight="1.0"/>
+        <operator id="ucldStdevScaler.c:D68_B" spec="ScaleOperator" parameter="@ucldStdev.c:D68_B" scaleFactor="0.5" weight="3.0"/>
+        <operator id="CategoriesRandomWalk.c:D68_B" spec="operator.IntRandomWalkOperator" parameter="@rateCategories.c:D68_B" weight="10.0" windowSize="1"/>
+        <operator id="CategoriesSwapOperator.c:D68_B" spec="operator.SwapOperator" intparameter="@rateCategories.c:D68_B" weight="10.0"/>
+        <operator id="CategoriesUniform.c:D68_B" spec="operator.UniformOperator" parameter="@rateCategories.c:D68_B" weight="10.0"/>
+        <operator id="relaxedUpDownOperator.c:D68_B" spec="operator.UpDownOperator" scaleFactor="0.75" weight="3.0">
+            <up idref="ucldMean.c:D68_B"/>
+            <down idref="Tree.t:D68_B"/>
+        </operator>
+        <operator id="ucldMeanScaler.c:D68_A" spec="ScaleOperator" parameter="@ucldMean.c:D68_A" scaleFactor="0.5" weight="1.0"/>
+        <operator id="ucldStdevScaler.c:D68_A" spec="ScaleOperator" parameter="@ucldStdev.c:D68_A" scaleFactor="0.5" weight="3.0"/>
+        <operator id="CategoriesRandomWalk.c:D68_A" spec="operator.IntRandomWalkOperator" parameter="@rateCategories.c:D68_A" weight="10.0" windowSize="1"/>
+        <operator id="CategoriesSwapOperator.c:D68_A" spec="operator.SwapOperator" intparameter="@rateCategories.c:D68_A" weight="10.0"/>
+        <operator id="CategoriesUniform.c:D68_A" spec="operator.UniformOperator" parameter="@rateCategories.c:D68_A" weight="10.0"/>
+        <operator id="relaxedUpDownOperator.c:D68_A" spec="operator.UpDownOperator" scaleFactor="0.75" weight="3.0">
+            <up idref="ucldMean.c:D68_A"/>
+            <down idref="Tree.t:D68_A"/>
+        </operator>
+        <operator id="BDMMPrimeLeafToSA.t:D68_B" spec="sa.evolution.operators.LeafToSampledAncestorJump" tree="@Tree.t:D68_B" weight="10.0"/>
+        <operator id="BDMMPrimeSAWilsonBalding.t:D68_B" spec="sa.evolution.operators.SAWilsonBalding" tree="@Tree.t:D68_B" weight="10.0"/>
+        <operator id="BDMMPrimeSAWide.t:D68_B" spec="sa.evolution.operators.SAExchange" isNarrow="false" tree="@Tree.t:D68_B" weight="10.0"/>
+        <operator id="BDMMPrimeSANarrow.t:D68_B" spec="sa.evolution.operators.SAExchange" tree="@Tree.t:D68_B" weight="10.0"/>
+        <operator id="BDMMPrimeSAUniformOperator.t:D68_B" spec="sa.evolution.operators.SAUniform" tree="@Tree.t:D68_B" weight="20.0"/>
+        <operator id="BDMMPrimeSATreeRootScaler.t:D68_B" spec="sa.evolution.operators.SAScaleOperator" rootOnly="true" scaleFactor="0.95" tree="@Tree.t:D68_B" weight="1.0"/>
+        <operator id="BDMMPrimeSATreeScaler.t:D68_B" spec="sa.evolution.operators.SAScaleOperator" scaleFactor="0.95" tree="@Tree.t:D68_B" weight="3.0"/>
+        <operator id="originBDMMPrimeScaler.t:D68_B" spec="ScaleOperator" parameter="@originBDMMPrime.t:D68_B" weight="3.0"/>
+        <operator id="ReEpiScaler.t:D68_B" spec="ScaleOperator" parameter="@ReEpi.t:D68_B" weight="3.0"/>
+        <operator id="migrationRateEpiScaler.t:D68" spec="ScaleOperator" parameter="@migrationRateEpi.t:D68" weight="3.0"/>
+        <logger id="tracelog" spec="Logger" fileName="dated_rt.log" logEvery="20000" model="@posterior" sanitiseHeaders="true" sort="smart">
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+            <log idref="treeLikelihood.D68_B"/>
+            <log id="TreeHeight.t:D68_B" spec="beast.base.evolution.tree.TreeStatLogger" tree="@Tree.t:D68_B"/>
+            <log idref="treeLikelihood.D68_A"/>
+            <log id="TreeHeight.t:D68_A" spec="beast.base.evolution.tree.TreeStatLogger" tree="@Tree.t:D68_A"/>
+            <log idref="ucldMean.c:D68_A"/>
+            <log idref="ucldStdev.c:D68_A"/>
+            <log id="rate.c:D68_A" spec="beast.base.evolution.RateStatistic" branchratemodel="@RelaxedClock.c:D68_A" tree="@Tree.t:D68_A"/>
+            <log idref="ucldMean.c:D68_B"/>
+            <log idref="ucldStdev.c:D68_B"/>
+            <log id="rate.c:D68_B" spec="beast.base.evolution.RateStatistic" branchratemodel="@RelaxedClock.c:D68_B" tree="@Tree.t:D68_B"/>
+            <log idref="kappa.s:D68_A"/>
+
+            <log idref="originBDMMPrime.t:D68_A"/>
+            <log idref="freqParameter.s:D68_A"/>
+            <log id="startTypePosteriorProbsLogger.t:D68_A" spec="bdmmprime.util.StartTypePosteriorProbsLogger" bdmmTreePrior="@BDMMPrime.t:D68_A"/>
+            <log id="typedTreeStats.t:D68_A" spec="bdmmprime.mapping.TypedTreeStatsLogger" includeRootEdge="true" typeLabel="type" typeSet="@typeSetBDMMPrime.t:D68_A">
+                <typedTree id="typeMappedTree.t:D68_A" spec="bdmmprime.mapping.TypeMappedTree" bdmmDistrib="@BDMMPrime.t:D68_A" mapOnInit="false" remapOnLog="true" startTypePriorProbs="@startTypePriorProbs.t:D68_A" typeLabel="type" typeTraitSet="@typeTraitSet.t:D68_A" untypedTree="@Tree.t:D68_A"/>
+            </log>
+            
+            <log idref="originBDMMPrime.t:D68_B"/>
+            <log id="startTypePosteriorProbsLogger.t:D68_B" spec="bdmmprime.util.StartTypePosteriorProbsLogger" bdmmTreePrior="@BDMMPrime.t:D68_B"/>
+            <log id="typedTreeStats.t:D68_B" spec="bdmmprime.mapping.TypedTreeStatsLogger" includeRootEdge="true" typeLabel="type" typeSet="@typeSetBDMMPrime.t:D68_B">
+                <typedTree id="typeMappedTree.t:D68_B" spec="bdmmprime.mapping.TypeMappedTree" bdmmDistrib="@BDMMPrime.t:D68_B" mapOnInit="false" remapOnLog="true" startTypePriorProbs="@startTypePriorProbs.t:D68_B" typeLabel="type" typeTraitSet="@typeTraitSet.t:D68_B" untypedTree="@Tree.t:D68_B"/>
+            </log>
+
+            <log idref="ReSPEpi.t:D68_A"/>
+            <log idref="samplingProportionSPEpi.t:D68_A"/>
+
+
+            <log idref="ReSPEpi.t:D68_B"/>
+            <log idref="samplingProportionSPEpi.t:D68_B"/>
+            <log idref="migrationRateSPEpi.t:D68_B"/>
+            <log idref="migrationRateSPEpi.t:D68_A"/>
+            <log idref="relsamp_A"/>
+            <log idref="relsamp_B"/>
+            <log idref="rel_loc"/>
+            <log idref="rel_clade"/>
+            <log idref="base"/>
+            <log idref="rel_2014"/>
+        </logger>
+        <logger id="screenlog" spec="Logger" logEvery="1000">
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+        </logger>
+<!--        <logger id="treelog.t:D68_A" spec="Logger" fileName="$(tree).trees" logEvery="1000" mode="tree">
+            <log id="TreeWithMetaDataLogger.t:D68_A" spec="beast.base.evolution.TreeWithMetaDataLogger" branchratemodel="@RelaxedClock.c:D68_A" tree="@Tree.t:D68_A"/>
+        </logger>
+        <logger id="treelog.t:D68_B" spec="Logger" fileName="$(tree).trees" logEvery="1000" mode="tree">
+            <log id="TreeWithMetaDataLogger.t:D68_B" spec="beast.base.evolution.TreeWithMetaDataLogger" branchratemodel="@RelaxedClock.c:D68_B" tree="@Tree.t:D68_B"/>
+        </logger>
+        <logger id="typedTreeLogger.t:D68_A" spec="bdmmprime.util.OptionalLogger" enableLogger="true" fileName="$(filebase).$(tree).typed.trees" logEvery="1000" mode="tree">
+            <log idref="typeMappedTree.t:D68_A"/>
+        </logger>
+        <logger id="nodeTypedTreeLogger.t:D68_A" spec="bdmmprime.util.OptionalLogger" enableLogger="true" fileName="$(filebase).$(tree).typed.node.trees" logEvery="1000" mode="tree">
+            <log id="nodeTypedTree.t:D68_A" spec="bdmmprime.mapping.TypedNodeTreeLogger" typedTree="@typeMappedTree.t:D68_A"/>
+        </logger>
+        -->
+        <logger id="trajLogger.t:D68_A" spec="bdmmprime.util.OptionalLogger" enableLogger="true" fileName="D68_A.traj" logEvery="250000">
+            <log id="typedTraj.t:D68_A" spec="bdmmprime.trajectories.SampledTrajectory" bdmmDistrib="@BDMMPrime.t:D68_A" startTypePriorProbs="@startTypePriorProbs.t:D68_A" typeMappedTree="@typeMappedTree.t:D68_A" useTauLeaping="true"/>
+        </logger>
+
+        <!--
+        <logger id="typedTreeLogger.t:D68_B" spec="bdmmprime.util.OptionalLogger" enableLogger="true" fileName="$(filebase).$(tree).typed.trees" logEvery="1000" mode="tree">
+            <log idref="typeMappedTree.t:D68_B"/>
+        </logger>
+        <logger id="nodeTypedTreeLogger.t:D68_B" spec="bdmmprime.util.OptionalLogger" enableLogger="true" fileName="$(filebase).$(tree).typed.node.trees" logEvery="1000" mode="tree">
+            <log id="nodeTypedTree.t:D68_B" spec="bdmmprime.mapping.TypedNodeTreeLogger" typedTree="@typeMappedTree.t:D68_B"/>
+        </logger>
+        -->
+        <logger id="trajLogger.t:D68_B" spec="bdmmprime.util.OptionalLogger" enableLogger="true" fileName="D68_B.traj" logEvery="250000">
+            <log id="typedTraj.t:D68_B" spec="bdmmprime.trajectories.SampledTrajectory" bdmmDistrib="@BDMMPrime.t:D68_B" startTypePriorProbs="@startTypePriorProbs.t:D68_B" typeMappedTree="@typeMappedTree.t:D68_B" useTauLeaping="true"/>
+        </logger>
+        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+    </run>
+</beast>
