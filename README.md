@@ -1,5 +1,5 @@
 # EV-D68_birth-death-sampling
-Code and data for the submitted manuscript "Reconstructing enterovirus D68 clade-specific transmission dynamics using Bayesian phylodynamics and association with acute flaccid myelitis cases"
+Code and data for the submitted manuscript "Reconstructing enterovirus D68 clade-specific transmission dynamics using phylodynamics and association with acute flaccid myelitis."
 
 ## Downloading the required sequence data
 The included data and code allows a user to recreate the analyses performed in the manuscript. The sequence data are nto included here but are publicly available on genbank with the accession numbers provided in the [metadata](./data/metafile.csv). Code to perform a genbank download in R and prepare a metadata file is provided in the [code](./code/1_genbank_pull.R) folder.
