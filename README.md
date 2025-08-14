@@ -1,7 +1,7 @@
 Code and data for the submitted manuscript "Reconstructing enterovirus D68 clade-specific transmission dynamics using phylodynamics and association with acute flaccid myelitis."
 
 ## Downloading the required sequence data
-The included data and code allows a user to recreate the analyses performed in the manuscript. The sequence data are not included here but are publicly available on genbank with the accession numbers provided in the [metadata](./data/metafile.csv). Code to perform a genbank download in R and prepare a metadata file is provided in the [code](./code/1_genbank_pull.R) folder.
+The included data and code allow a user to recreate the analyses performed in the manuscript. The sequence data are not included here but are publicly available on genbank with the accession numbers provided in the [metadata](./data/metafile.csv). Code to perform a genbank download in R and prepare a metadata file is provided in the [code](./code/1_genbank_pull.R) folder.
 
 ## Subsampling the data
 In this analysis we perform multiple samples of the data under different schemes to test the sensitivity of the model to the included sequences and the sampling scheme used. The code used to generate these samples is provided in [2_subsampling.R](./code/2_subsampling.R) and code to plot histograms of the samples is provided in [3_plot_samples.R](./code/3_plot_samples.R).
