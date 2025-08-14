@@ -1,4 +1,3 @@
-# EV-D68_birth-death-sampling
 Code and data for the submitted manuscript "Reconstructing enterovirus D68 clade-specific transmission dynamics using phylodynamics and association with acute flaccid myelitis."
 
 ## Downloading the required sequence data
