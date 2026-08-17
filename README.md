@@ -1,4 +1,4 @@
-Code and data for the submitted manuscript "Reconstructing enterovirus D68 clade-specific transmission dynamics using phylodynamics and association with acute flaccid myelitis."
+Code and data for the manuscript "Clade-specific transmission dynamics of enterovirus D68 and their association with acute flaccid myelitis"
 
 ## Downloading the required sequence data
 The included data and code allow a user to recreate the analyses performed in the manuscript. The sequence data are not included here but are publicly available on genbank with the accession numbers provided in the [metadata](./data/metafile.csv). Code to perform a genbank download in R and prepare a metadata file is provided in the [code](./code/1_genbank_pull.R) folder.
